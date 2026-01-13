@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinFlow - Quản Lý Tài Chính</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>FinFlow</h1>
+  </header>
+
+  <main>
+    <!-- Tab Tổng quan -->
+    <section id="dashboard" class="tab active">
+      <h2>Tổng quan</h2>
+      <div class="summary">
+        <div class="card">
+          <p>Tổng thu nhập kỳ này</p>
+          <h3 id="total-income">0 ₫</h3>
+        </div>
+        <div class="card">
+          <p>Tổng chi tiêu</p>
+          <h3 id="total-expense">0 ₫</h3>
+        </div>
+        <div class="card">
+          <p>Số dư còn lại</p>
+          <h3 id="balance">0 ₫</h3>
+        </div>
+      </div>
+      <h3>Phân bổ quỹ</h3>
+      <div id="funds-overview"></div>
+      <h3>Giao dịch gần nhất</h3>
+      <ul id="recent-transactions"></ul>
+    </section>
+
+    <!-- Tab Thu nhập -->
+    <section id="income" class="tab">
+      <h2>Nhập thu nhập mới</h2>
+      <form id="income-form">
+        <label>Số tiền (₫):</label>
+        <input type="number" id="income-amount" min="0" required />
+        <label>Nguồn thu:</label>
+        <input type="text" id="income-source" placeholder="Lương / Freelance..." required />
+        <button type="submit">Nhập thu nhập</button>
+      </form>
+
+      <h2>Phân bổ quỹ</h2>
+      <form id="allocate-form">
+        <div id="allocate-fields"></div>
+        <button type="submit">Phân bổ</button>
+      </form>
+    </section>
+
+    <!-- Tab Giao dịch -->
+    <section id="transactions" class="tab">
+      <h2>Thêm giao dịch</h2>
+      <form id="transaction-form">
+        <label>Số tiền (₫):</label>
+        <input type="number" id="trans-amount" min="0" required />
+        <label>Loại:</label>
+        <select id="trans-type" required>
+          <option value="expense">Chi tiêu</option>
+          <option value="income">Thu nhập bất thường</option>
+        </select>
+        <label>Danh mục:</label>
+        <input type="text" id="trans-category" placeholder="Ăn uống / Nhà cửa..." required />
+        <label>Quỹ (nếu chi tiêu):</label>
+        <select id="trans-fund"></select>
+        <label>Ghi chú:</label>
+        <input type="text" id="trans-note" />
+        <button type="submit">Thêm</button>
+      </form>
+
+      <h2>Danh sách giao dịch</h2>
+      <ul id="all-transactions"></ul>
+    </section>
+
+    <!-- Tab Quỹ -->
+    <section id="funds" class="tab">
+      <h2>Quản lý quỹ</h2>
+      <div id="funds-list"></div>
+      <button id="end-period">Kết thúc kỳ (xử lý dư)</button>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="dashboard">Tổng quan</button>
+    <button class="nav-btn" data-tab="income">Thu nhập</button>
+    <button class="nav-btn" data-tab="transactions">Giao dịch</button>
+    <button class="nav-btn" data-tab="funds">Quỹ</button>
+  </nav>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
