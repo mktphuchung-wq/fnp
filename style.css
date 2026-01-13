@@ -1,0 +1,79 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f4f4f9; color: #333; padding-bottom: 70px; }
+
+header {
+  background: linear-gradient(90deg, #4CAF50, #2196F3);
+  color: white;
+  text-align: center;
+  padding: 15px;
+}
+
+h1, h2, h3 { margin-bottom: 10px; }
+
+main { padding: 20px; }
+.tab { display: none; }
+.tab.active { display: block; }
+
+.summary { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+.card {
+  flex: 1 1 100px;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.card h3 { color: #4CAF50; }
+
+.fund-card {
+  background: white;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.progress { height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; }
+
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+label { display: block; margin: 10px 0 5px; }
+input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+button {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+button:hover { background: #1976D2; }
+
+ul { list-style: none; }
+li { background: white; padding: 12px; margin: 8px 0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+li.expense { border-left: 4px solid #F44336; }
+li.income { border-left: 4px solid #4CAF50; }
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+}
+.nav-btn {
+  flex: 1;
+  padding: 15px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+.nav-btn.active { background: #2196F3; color: white; }
