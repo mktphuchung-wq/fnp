@@ -1,214 +1,214 @@
-:root {
-    --bg-color: #0f172a; /* Navy đậm */
-    --card-bg: #1e293b;   /* Navy sáng hơn */
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --accent: #38bdf8;    /* Xanh dương sáng */
-    --success: #4ade80;   /* Xanh lá */
-    --danger: #f87171;    /* Đỏ */
-    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+// --- Cấu hình Quỹ mặc định ---
+const defaultFunds = [
+    { id: 'f1', name: 'Thiết yếu', percent: 50, balance: 0, color: '#f87171' }, // Đỏ nhạt
+    { id: 'f2', name: 'Giáo dục', percent: 10, balance: 0, color: '#fbbf24' },  // Vàng
+    { id: 'f3', name: 'Hưởng thụ', percent: 10, balance: 0, color: '#c084fc' }, // Tím
+    { id: 'f4', name: 'Đầu tư', percent: 20, balance: 0, color: '#4ade80' },    // Xanh lá
+    { id: 'f5', name: 'Thiện nguyện', percent: 10, balance: 0, color: '#38bdf8' } // Xanh dương
+];
+
+// --- State Management ---
+let funds = JSON.parse(localStorage.getItem('flowfund_funds')) || defaultFunds;
+let transactions = JSON.parse(localStorage.getItem('flowfund_trans')) || [];
+
+// --- Utilities ---
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+};
+
+const saveData = () => {
+    localStorage.setItem('flowfund_funds', JSON.stringify(funds));
+    localStorage.setItem('flowfund_trans', JSON.stringify(transactions));
+    renderApp();
+};
+
+// --- Core Logic ---
+
+// 1. Phân bổ thu nhập (Logic cốt lõi)
+function allocateIncome(amount) {
+    if (amount <= 0) return alert("Vui lòng nhập số tiền hợp lệ!");
+
+    funds.forEach(fund => {
+        const amountToAdd = (amount * fund.percent) / 100;
+        fund.balance += amountToAdd;
+    });
+
+    addTransaction(`Phân bổ thu nhập`, amount, 'income', 'Tất cả');
+    saveData();
+    alert("Đã phân bổ thành công!");
+    document.getElementById('income-input').value = '';
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+// 2. Chốt kỳ & Tái phân bổ (Logic Rollover)
+function rolloverFunds() {
+    const confirmRollover = confirm("Bạn có chắc muốn gom toàn bộ số dư hiện tại để phân bổ lại như thu nhập mới?");
+    if (!confirmRollover) return;
 
-body {
-    background-color: var(--bg-color);
-    color: var(--text-primary);
-    font-family: var(--font-family);
-    padding-bottom: 80px; /* Chừa chỗ cho menu dưới */
+    let totalRemaining = 0;
+    funds.forEach(fund => {
+        totalRemaining += fund.balance;
+        fund.balance = 0; // Reset về 0
+    });
+
+    // Lấy thêm tiền từ input nếu có (Ví dụ: Lương mới + Số dư cũ)
+    const newIncomeInput = parseFloat(document.getElementById('income-input').value) || 0;
+    const totalToAllocate = totalRemaining + newIncomeInput;
+
+    if (totalToAllocate > 0) {
+        funds.forEach(fund => {
+            const amountToAdd = (totalToAllocate * fund.percent) / 100;
+            fund.balance += amountToAdd;
+        });
+        
+        addTransaction(`Tái phân bổ cuối kỳ (Dư cũ: ${formatCurrency(totalRemaining)})`, totalToAllocate, 'income', 'System');
+        alert(`Đã tái phân bổ tổng: ${formatCurrency(totalToAllocate)}`);
+    } else {
+        alert("Không có số dư để tái phân bổ.");
+    }
+    
+    document.getElementById('income-input').value = '';
+    saveData();
 }
 
-.app-container {
-    max-width: 480px;
-    margin: 0 auto;
-    background-color: var(--bg-color);
-    min-height: 100vh;
-    position: relative;
+// 3. Thêm giao dịch chi tiêu
+function addTransaction(desc, amount, type, fundName) {
+    const trans = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('vi-VN'),
+        desc,
+        amount,
+        type,
+        fundName
+    };
+    transactions.unshift(trans); // Thêm vào đầu mảng
 }
 
-/* Header */
-header {
-    padding: 20px;
+// --- DOM Rendering ---
+
+function renderApp() {
+    renderDashboard();
+    renderHistory();
+    renderSelectOptions();
 }
 
-.header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+function renderDashboard() {
+    const fundsContainer = document.getElementById('funds-container');
+    const totalBalanceEl = document.getElementById('total-balance');
+    
+    let totalBalance = 0;
+    fundsContainer.innerHTML = '';
+
+    funds.forEach(fund => {
+        totalBalance += fund.balance;
+
+        const card = document.createElement('div');
+        card.className = 'fund-card';
+        card.innerHTML = `
+            <div class="fund-header">
+                <span class="fund-name" style="color: ${fund.color}">${fund.name}</span>
+                <span class="fund-percent">${fund.percent}%</span>
+            </div>
+            <h3>${formatCurrency(fund.balance)}</h3>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${Math.min(100, (fund.balance > 0 ? 50 : 0))}%; background-color: ${fund.color}"></div>
+            </div>
+        `;
+        fundsContainer.appendChild(card);
+    });
+
+    totalBalanceEl.innerText = formatCurrency(totalBalance);
 }
 
-.total-balance-card {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    padding: 25px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+function renderHistory() {
+    const list = document.getElementById('transaction-list');
+    list.innerHTML = '';
+
+    transactions.slice(0, 10).forEach(t => { // Chỉ hiện 10 giao dịch gần nhất
+        const li = document.createElement('li');
+        li.className = 'trans-item';
+        li.innerHTML = `
+            <div class="trans-info">
+                <h4>${t.desc}</h4>
+                <span>${t.date} • ${t.fundName}</span>
+            </div>
+            <div class="trans-amount ${t.type === 'income' ? 'pos' : 'neg'}">
+                ${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}
+            </div>
+        `;
+        list.appendChild(li);
+    });
 }
 
-.total-balance-card p { color: #e0e7ff; font-size: 0.9rem; }
-.total-balance-card h2 { font-size: 2rem; margin-top: 5px; }
-
-/* Tabs Logic */
-.tab-content { display: none; padding: 20px; animation: fadeIn 0.3s; }
-.tab-content.active { display: block; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+function renderSelectOptions() {
+    const select = document.getElementById('expense-fund-select');
+    select.innerHTML = '';
+    funds.forEach(fund => {
+        const option = document.createElement('option');
+        option.value = fund.id;
+        option.innerText = `${fund.name} (Còn: ${formatCurrency(fund.balance)})`;
+        select.appendChild(option);
+    });
 }
 
-/* Funds Grid */
-.funds-grid {
-    display: grid;
-    gap: 15px;
-}
+// --- Event Listeners ---
 
-.fund-card {
-    background-color: var(--card-bg);
-    padding: 15px;
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-}
+// Navigation Tabs
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.target).classList.add('active');
+    });
+});
 
-.fund-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-.fund-name { font-weight: bold; }
-.fund-percent { font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 10px; }
+// Allocate Button
+document.getElementById('allocate-btn').addEventListener('click', () => {
+    const amount = parseFloat(document.getElementById('income-input').value);
+    allocateIncome(amount);
+});
 
-.progress-bar-bg {
-    height: 8px;
-    background-color: rgba(255,255,255,0.1);
-    border-radius: 4px;
-    margin-top: 10px;
-    overflow: hidden;
-}
+// Rollover Button
+document.getElementById('rollover-btn').addEventListener('click', rolloverFunds);
 
-.progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+// Modal Logic
+const modal = document.getElementById('transaction-modal');
+const fab = document.getElementById('fab-add');
+const closeBtn = document.querySelector('.close-modal');
 
-/* Buttons & Inputs */
-.input-group { margin-bottom: 15px; }
-.input-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); }
-input, select {
-    width: 100%;
-    padding: 12px;
-    background: var(--card-bg);
-    border: 1px solid #334155;
-    color: white;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    font-size: 1rem;
-}
+fab.onclick = () => { renderSelectOptions(); modal.style.display = "flex"; }
+closeBtn.onclick = () => modal.style.display = "none";
+window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; }
 
-.primary-btn {
-    width: 100%;
-    padding: 14px;
-    background-color: var(--success);
-    color: #064e3b;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1rem;
-}
+// Save Expense
+document.getElementById('save-transaction-btn').addEventListener('click', () => {
+    const amount = parseFloat(document.getElementById('expense-amount').value);
+    const desc = document.getElementById('expense-desc').value;
+    const fundId = document.getElementById('expense-fund-select').value;
 
-.secondary-btn {
-    width: 100%;
-    padding: 14px;
-    background-color: var(--accent);
-    color: #0c4a6e;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
+    if (!amount || amount <= 0) return alert("Nhập số tiền hợp lệ");
 
-.desc-text { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px; }
+    const fund = funds.find(f => f.id === fundId);
+    if (fund) {
+        fund.balance -= amount;
+        addTransaction(desc, amount, 'expense', fund.name);
+        saveData();
+        modal.style.display = "none";
+        // Clear inputs
+        document.getElementById('expense-amount').value = '';
+        document.getElementById('expense-desc').value = '';
+    }
+});
 
-/* History List */
-#transaction-list { list-style: none; }
-.trans-item {
-    background-color: var(--card-bg);
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.trans-info h4 { font-size: 1rem; margin-bottom: 4px; }
-.trans-info span { font-size: 0.8rem; color: var(--text-secondary); }
-.trans-amount { font-weight: bold; }
-.trans-amount.neg { color: var(--danger); }
-.trans-amount.pos { color: var(--success); }
+// Reset Data (Cho mục đích test)
+document.getElementById('reset-btn').addEventListener('click', () => {
+    if(confirm('Xóa toàn bộ dữ liệu?')) {
+        localStorage.removeItem('flowfund_funds');
+        localStorage.removeItem('flowfund_trans');
+        location.reload();
+    }
+});
 
-/* Floating Button */
-.fab {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 30px;
-    background-color: var(--accent);
-    border: none;
-    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
-    font-size: 1.5rem;
-    color: #0f172a;
-    cursor: pointer;
-    z-index: 100;
-}
-
-/* Bottom Nav */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 70px;
-    background-color: var(--card-bg);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-top: 1px solid #334155;
-    z-index: 99;
-}
-
-.nav-item {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-.nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
-.nav-item.active { color: var(--accent); }
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    z-index: 200;
-    justify-content: center;
-    align-items: center;
-}
-.modal-content {
-    background: var(--bg-color);
-    padding: 25px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
-    position: relative;
-    border: 1px solid #334155;
-}
-.close-modal {
-    position: absolute; right: 20px; top: 15px;
-    font-size: 1.5rem; cursor: pointer;
-}
+// Init
+renderApp();
