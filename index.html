@@ -2,87 +2,143 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowFund - Quản Lý Dòng Tiền</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FlowFund V2</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <div class="app-container">
-        <header>
-            <div class="header-top">
-                <h1>FlowFund</h1>
-                <button id="reset-btn" title="Reset dữ liệu"><i class="fas fa-redo"></i></button>
+    <header>
+        <div class="header-info">
+            <h1 class="app-name">FlowFund</h1>
+            <span id="current-cycle" class="cycle-badge">Kỳ: ...</span>
+        </div>
+        <div class="total-card">
+            <p>Tổng Số Dư Các Quỹ</p>
+            <h2 id="grand-total">0 đ</h2>
+            <div class="quick-stats">
+                <span><i class="fas fa-arrow-down"></i> Thu: <b id="stat-income">0</b></span>
+                <span><i class="fas fa-arrow-up"></i> Chi: <b id="stat-expense">0</b></span>
             </div>
-            <div class="total-balance-card">
-                <p>Tổng Tài Sản Thực</p>
-                <h2 id="total-balance">0 VND</h2>
+        </div>
+    </header>
+
+    <main id="main-container">
+        
+        <section id="tab-dashboard" class="tab-content active">
+            <div class="section-title">
+                <h3><i class="fas fa-wallet"></i> Số dư khả dụng từng quỹ</h3>
             </div>
-        </header>
-
-        <main id="main-content">
-            <section id="dashboard" class="tab-content active">
-                <h3>Tổng quan quỹ</h3>
-                <div id="funds-container" class="funds-grid">
-                    </div>
-            </section>
-
-            <section id="allocation" class="tab-content">
-                <h3>Phân bổ Thu nhập</h3>
-                <div class="input-group">
-                    <label>Thu nhập mới (VND)</label>
-                    <input type="number" id="income-input" placeholder="Nhập số tiền...">
+            <div id="funds-list" class="card-list">
                 </div>
-                <button id="allocate-btn" class="primary-btn">Phân bổ tự động</button>
-                
-                <hr>
-                
-                <h3>Chốt kỳ & Tái phân bổ</h3>
-                <p class="desc-text">Gom toàn bộ số dư hiện tại cộng với thu nhập mới để chia lại từ đầu.</p>
-                <button id="rollover-btn" class="secondary-btn">Chốt kỳ & Tái phân bổ vào Thu nhập</button>
-            </section>
+        </section>
 
-            <section id="history" class="tab-content">
-                <h3>Lịch sử giao dịch</h3>
-                <ul id="transaction-list">
-                    </ul>
-            </section>
-        </main>
+        <section id="tab-settings" class="tab-content">
+            
+            <div class="settings-block">
+                <h3><i class="fas fa-file-invoice-dollar"></i> Chi phí cố định (Trừ trước)</h3>
+                <p class="hint">Các khoản này sẽ được trừ thẳng vào thu nhập trước khi phân bổ.</p>
+                <ul id="fixed-cost-list" class="simple-list"></ul>
+                <div class="add-row">
+                    <input type="text" id="new-fixed-name" placeholder="Tên (VD: Tiền nhà)">
+                    <input type="number" id="new-fixed-amount" placeholder="Số tiền">
+                    <button onclick="addFixedCost()"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
 
-        <button id="fab-add" class="fab"><i class="fas fa-plus"></i></button>
+            <hr class="divider">
 
-        <nav class="bottom-nav">
-            <button class="nav-item active" data-target="dashboard">
-                <i class="fas fa-chart-pie"></i>
-                <span>Tổng quan</span>
-            </button>
-            <button class="nav-item" data-target="allocation">
-                <i class="fas fa-wallet"></i>
-                <span>Nguồn tiền</span>
-            </button>
-            <button class="nav-item" data-target="history">
-                <i class="fas fa-list"></i>
-                <span>Lịch sử</span>
-            </button>
-        </nav>
+            <div class="settings-block">
+                <h3><i class="fas fa-chart-pie"></i> Cấu hình Quỹ phân bổ</h3>
+                <div class="chart-summary">
+                    <span>Tổng tỷ trọng: <b id="total-percent">0%</b></span>
+                    <span id="percent-warning" style="color:red; display:none;">(Chưa đủ 100%)</span>
+                </div>
+                <ul id="fund-settings-list" class="simple-list"></ul>
+                <div class="add-row">
+                    <input type="text" id="new-fund-name" placeholder="Tên quỹ (VD: Ăn uống)">
+                    <input type="number" id="new-fund-percent" placeholder="%">
+                    <button onclick="addNewFund()"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-plans" class="tab-content">
+            <div class="section-title">
+                <h3><i class="fas fa-piggy-bank"></i> Mục tiêu tài chính</h3>
+            </div>
+            <div id="goals-list" class="card-list">
+                </div>
+            <button class="dashed-btn" onclick="openGoalModal()">+ Thêm mục tiêu mới</button>
+        </section>
+
+        <section id="tab-history" class="tab-content">
+            <div class="section-title">
+                <h3><i class="fas fa-history"></i> Lịch sử giao dịch</h3>
+                <button class="clear-data-btn" onclick="resetAllData()"><i class="fas fa-trash"></i> Reset</button>
+            </div>
+            <ul id="transaction-list" class="history-list"></ul>
+        </section>
+
+    </main>
+
+    <button class="fab-btn" onclick="openTransactionModal()">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('tab-dashboard', this)">
+            <i class="fas fa-home"></i> Tổng quan
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-settings', this)">
+            <i class="fas fa-sliders-h"></i> Cấu hình
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-plans', this)">
+            <i class="fas fa-bullseye"></i> Kế hoạch
+        </div>
+        <div class="nav-item" onclick="switchTab('tab-history', this)">
+            <i class="fas fa-list-alt"></i> Lịch sử
+        </div>
+    </nav>
+
+    <div id="modal-transaction" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modal-transaction')">&times;</span>
+            <h3>Ghi chép giao dịch</h3>
+            
+            <div class="switch-type">
+                <button class="type-btn active" id="btn-expense" onclick="setType('expense')">Chi tiêu</button>
+                <button class="type-btn" id="btn-income" onclick="setType('income')">Thu nhập</button>
+            </div>
+
+            <div class="input-group">
+                <label>Số tiền</label>
+                <input type="number" id="trans-amount" placeholder="0">
+            </div>
+
+            <div class="input-group" id="fund-selector-group">
+                <label>Trừ vào quỹ</label>
+                <select id="trans-fund-select"></select>
+            </div>
+
+            <div class="input-group">
+                <label>Ghi chú</label>
+                <input type="text" id="trans-note" placeholder="Mua gì / Từ đâu?">
+            </div>
+
+            <button class="confirm-btn" onclick="saveTransaction()">Lưu lại</button>
+        </div>
     </div>
 
-    <div id="transaction-modal" class="modal">
+    <div id="modal-goal" class="modal">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h3>Thêm Giao Dịch</h3>
-            
-            <label>Số tiền chi tiêu</label>
-            <input type="number" id="expense-amount" placeholder="0">
-
-            <label>Chọn Quỹ chi trả</label>
-            <select id="expense-fund-select"></select>
-
-            <label>Mô tả / Tags</label>
-            <input type="text" id="expense-desc" placeholder="VD: Ăn tối #HenHo">
-
-            <button id="save-transaction-btn" class="primary-btn">Lưu Giao Dịch</button>
+            <span class="close" onclick="closeModal('modal-goal')">&times;</span>
+            <h3>Mục tiêu mới</h3>
+            <input type="text" id="goal-name" placeholder="Tên (VD: Mua xe)">
+            <input type="number" id="goal-target" placeholder="Số tiền cần">
+            <input type="number" id="goal-current" placeholder="Đã có sẵn (nếu có)">
+            <button class="confirm-btn" onclick="addGoal()">Tạo mục tiêu</button>
         </div>
     </div>
 
