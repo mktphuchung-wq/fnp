@@ -1,0 +1,6 @@
+pydantic>=2.7
+pydantic-settings>=2.2
+PyYAML>=6.0
+requests>=2.31
+SQLAlchemy>=2.0
+streamlit>=1.35
