@@ -1,0 +1,11 @@
+environment: paper
+oanda_environment: practice
+base_currency: USD
+trading_pairs:
+  - EUR_USD
+  - GBP_USD
+  - USD_JPY
+risk_per_trade: 0.01
+max_daily_loss: 0.03
+max_open_positions: 3
+journal_database_url: sqlite:///journal.db
